@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<!-- saved from url=(0095)http://manos.malihu.gr/repository/page-scroll-to-id/demo/ps2id-mousewheel-keyboard-example.html -->
+<html lang="en" class="gr__manos_malihu_gr"><!--<![endif]--><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>EJW probeersel</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<!-- stylesheet for demo and examples -->
+	<link rel="stylesheet" href="style.css">
+	<!--[if lt IE 9]>
+	<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<script src="http://css3-mediaqueries-js.googlecode.com/svn/trunk/css3-mediaqueries.js"></script>
+	<![endif]-->
+
+	<style>
+		body{ -ms-touch-action: none; touch-action: none; } /* optional for touch/pointer events */
+
+		/* aside indicators */
+		#sections-bullets{
+			position: fixed;
+			right: 2em;
+			height: auto;
+			top: 50%;
+			transform: translateY(-50%);
+		}
+
+		.section-bullet{
+			display: block;
+			position: relative;
+			width: 9px;
+			height: 9px;
+			border-radius: 100%;
+			background: #7f7f7f;
+			margin: 12px auto;
+			opacity: .6;
+		}
+
+		.section-bullet:hover, .section-bullet.mPS2id-highlight{
+			opacity: 1;
+			background: #e6842c;
+		}
+	</style>
+
+</head>
+
+<body data-gr-c-s-loaded="true">
+
+
+	<nav id="navigation-menu">
+		<ul>
+			<li><a href="#section-1" rel="m_PageScroll2id" class="__mPS2id _mPS2id-h">lorem</a></li>
+			<li><a href="#section-2" rel="m_PageScroll2id" class="__mPS2id _mPS2id-h">ipsum</a></li>
+			<li><a href="#section-3" rel="m_PageScroll2id" class="__mPS2id _mPS2id-h">dolor</a></li>
+		</ul>
+	</nav>
+
+	<div id="content">
+	</div>
+
+	<div id="members">
+		<section id="section-1" class="_mPS2id-t">
+			  <img src="assets/left.png" alt="member1" id="member">
+		</section>
+		<section id="section-2" class="_mPS2id-t">
+			<img src="assets/middle.png" alt="member2" id="member">
+		</section>
+		<section id="section-3" class="_mPS2id-t">
+			<img src="assets/right.png" alt="member3" id="member">
+		</section>
+	</div>
+
+
+
+	<!-- Google CDN jQuery with fallback to local -->
+	<script src="jquery.min.js"></script>
+	<script>window.jQuery || document.write('<script src="js/jquery-3.1.0.min.js"><\/script>')</script>
+
+	<!-- Page Scroll to id plugin -->
+	<script src="jquery.malihu.PageScroll2id.min.js"></script>
+
+	<script>
+		(function($){
+			$(window).on("load",function(){
+
+				/* Page Scroll to id fn call */
+				$("a[rel='m_PageScroll2id']").mPageScroll2id({
+					scrollSpeed: 1200
+					,scrollEasing:"easeOutQuint"
+					,liveSelector:"a[rel='m_PageScroll2id']"
+				});
+
+			});
+		})(jQuery);
+	</script>
+
+	<!-- mousewheel, keyboard, touch functionality -->
+	<script>
+		(function($){
+			$(window).on("load",function(){
+
+				if(!$(document).data("mPS2id")){
+					console.log("Error: 'Page scroll to id' plugin not present or activated. Please run the code after plugin is loaded.");
+					return;
+				}
+
+				$(document).data("mPS2idExtend",{
+					selector:"#navigation-menu ._mPS2id-h",
+					currentSelector:function(){
+						return this.index($(".mPS2id-highlight-first").length ? $(".mPS2id-highlight-first") : $(".mPS2id-highlight"));
+					},
+					input:{y:null,x:null},
+					i:null,
+					time:null
+				}).on("scrollSection",function(e,dlt,i){
+					var d=$(this).data("mPS2idExtend"),
+						sel=$(d.selector);
+					if(!$("html,body").is(":animated")){
+						if(!i) i=d.currentSelector.call(sel);
+						if(!(i===0 && dlt>0) && !(i===sel.length-1 && dlt<0)) sel.eq(i-dlt).trigger("click.mPS2id");
+					}
+				}).on("mousewheel DOMMouseScroll",function(e){ //mousewheel
+					if($($(this).data("mPS2idExtend").selector).length) e.preventDefault();
+					$(this).trigger("scrollSection",((e.originalEvent.detail<0 || e.originalEvent.wheelDelta>0) ? 1 : -1));
+				}).on("keydown",function(e){ //keyboard
+					var code=e.keyCode ? e.keyCode : e.which,
+						keys=$(this).data("mPS2id").layout==="horizontal" ? [37,39] : [38,40];
+					if(code===keys[0] || code===keys[1]){
+						if($($(this).data("mPS2idExtend").selector).length) e.preventDefault();
+						$(this).trigger("scrollSection",(code===keys[0] ? 1 : -1));
+					}
+				}).on("pointerdown touchstart",function(e){ //touch (optional)
+					var o=e.originalEvent,
+						d=$(this).data("mPS2idExtend");
+					if(o.pointerType==="touch" || e.type==="touchstart"){
+						var y=o.screenY || o.changedTouches[0].screenY;
+						d.input.y=y;
+						if($(this).data("mPS2id").layout==="horizontal"){
+							var x=o.screenX || o.changedTouches[0].screenX;
+							d.input.x=x;
+						}
+						d.time=o.timeStamp;
+						d.i=d.currentSelector.call($(d.selector));
+					}
+				}).on("touchmove",function(e){
+					if($("html,body").is(":animated")) e.preventDefault();
+				}).on("pointerup touchend",function(e){
+					var o=e.originalEvent;
+					if(o.pointerType==="touch" || e.type==="touchend"){
+						var y=o.screenY || o.changedTouches[0].screenY,
+							d=$(this).data("mPS2idExtend"),
+							diff=d.input.y-y,
+							time=o.timeStamp-d.time,
+							i=d.currentSelector.call($(d.selector));
+						if($(this).data("mPS2id").layout==="horizontal"){
+							var x=o.screenX || o.changedTouches[0].screenX,
+								diff=d.input.x-x;
+						}
+						if(Math.abs(diff)<2) return;
+						var _switch=function(){
+								return time<200 && i===d.i;
+							};
+						$(this).trigger("scrollSection",[(diff>0 && _switch() ? -1 : diff<0 && _switch() ? 1 : 0),(_switch() ? d.i : i)]);
+					}
+				});
+
+				//aside indicators
+				$("body").append("<div id='sections-bullets' />").find($(document).data("mPS2idExtend").selector).each(function(){
+					$("#sections-bullets").append("<a href='"+$(this).attr("href")+"' class='section-bullet' rel='m_PageScroll2id'></a>");
+				});
+
+			});
+		})(jQuery);
+	</script>
+
+</body>
+></html>
